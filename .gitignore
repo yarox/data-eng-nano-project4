@@ -1,4 +1,6 @@
 **/.ipynb_checkpoints
-**/.DS_Store
-**/*.pyc
+**/spark-warehouse
 **/__pycache__
+**/.DS_Store
+*parquet*
+**/*.pyc
