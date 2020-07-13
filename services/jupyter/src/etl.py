@@ -8,8 +8,15 @@ import fire
 import os
 
 
+SONGPLAYS_TABLE_PARQUET = 'songplays_table.parquet'
+ARTISTS_TABLE_PARQUET = 'artists_table.parquet'
+SONGS_TABLE_PARQUET = 'songs_table.parquet'
+USERS_TABLE_PARQUET = 'users_table.parquet'
+TIME_TABLE_PARQUET = 'time_table.parquet'
+
 SONG_DATASET_PATH = 'song_data/*/*/*/'
 LOG_DATASET_PATH = 'log_data/*/*/'
+
 
 config = configparser.ConfigParser()
 config.read('dl.cfg')
@@ -58,7 +65,7 @@ def process_song_data(spark, input_data, output_data):
     ''')
 
     # write songs table to parquet files partitioned by year and artist
-    songs_table_path = os.path.join(output_data, 'songs_table.parquet')
+    songs_table_path = os.path.join(output_data, SONGS_TABLE_PARQUET)
     songs_table.write.parquet(songs_table_path, mode='overwrite',
         partitionBy=('year', 'artist_id'))
 
@@ -76,7 +83,7 @@ def process_song_data(spark, input_data, output_data):
     ''')
 
     # write artists table to parquet files
-    artists_table_path = os.path.join(output_data, 'artists_table.parquet')
+    artists_table_path = os.path.join(output_data, ARTISTS_TABLE_PARQUET)
     artists_table.write.parquet(artists_table_path, mode='overwrite')
 
 
@@ -120,7 +127,7 @@ def process_log_data(spark, input_data, output_data):
     ''')
 
     # write users table to parquet files
-    users_table_path = os.path.join(output_data, 'users_table.parquet')
+    users_table_path = os.path.join(output_data, USERS_TABLE_PARQUET)
     users_table.write.parquet(users_table_path, mode='overwrite')
 
     # extract columns to create time table
@@ -138,7 +145,7 @@ def process_log_data(spark, input_data, output_data):
     ''')
 
     # write time table to parquet files partitioned by year and month
-    time_table_path = os.path.join(output_data, 'time_table.parquet')
+    time_table_path = os.path.join(output_data, TIME_TABLE_PARQUET)
     time_table.write.parquet(time_table_path, mode='overwrite',
         partitionBy=('year', 'month'))
 
@@ -167,7 +174,7 @@ def process_log_data(spark, input_data, output_data):
     ''')
 
     # write songplays table to parquet files partitioned by year and month
-    songplays_table_path = os.path.join(output_data, 'songplays_table.parquet')
+    songplays_table_path = os.path.join(output_data, SONGPLAYS_TABLE_PARQUET)
     songplays_table.write.parquet(songplays_table_path, mode='overwrite',
         partitionBy=('year', 'month'))
 
