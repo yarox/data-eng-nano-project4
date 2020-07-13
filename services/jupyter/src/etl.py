@@ -7,6 +7,10 @@ import configparser
 import os
 
 
+SONG_DATASET_PATH = 'song_data/*/*/*/'
+LOG_DATASET_PATH = 'log_data/*/*/'
+
+
 config = configparser.ConfigParser()
 config.read('dl.cfg')
 
@@ -28,8 +32,9 @@ def create_spark_session():
 
 
 def process_song_data(spark, input_data, output_data):
-    # read song data file
-    df = spark.read.json(input_data, multiLine=True)
+    # read song data files
+    song_data = os.path.join(input_data, SONG_DATASET_PATH)
+    df = spark.read.json(song_data, multiLine=True)
 
     # transform empty strings and zeros into NULLs
     df = df.withColumn('artist_location', as_null('', 'artist_location'))
@@ -77,7 +82,8 @@ def process_song_data(spark, input_data, output_data):
 
 def process_log_data(spark, input_data, output_data):
     # read song data file
-    df = spark.read.json(input_data, multiLine=True)
+    log_data = os.path.join(input_data, LOG_DATASET_PATH)
+    df = spark.read.json(log_data)
 
     # transform empty strings into NULLs, and make userId be an integer value
     df = df.withColumn('userId', as_null('', 'userId'))
