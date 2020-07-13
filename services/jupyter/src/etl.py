@@ -115,6 +115,8 @@ def main(input_data='s3a://udacity-dend/', output_data=''):
     process_song_data(spark, input_data, output_data)
     process_log_data(spark, input_data, output_data)
 
+    spark.stop()
+
 
 if __name__ == '__main__':
     fire.Fire(main)
