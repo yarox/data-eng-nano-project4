@@ -11,3 +11,4 @@ services:
             - 8888:8888
         volumes:
             - ./services/jupyter/src/:/home/jovyan/work/
+            - ./data:/data/
