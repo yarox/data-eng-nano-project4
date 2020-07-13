@@ -1,0 +1,3 @@
+psycopg2-binary
+ipython-sql
+boto3
