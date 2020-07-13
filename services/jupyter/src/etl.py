@@ -29,10 +29,30 @@ os.environ['AWS_ACCESS_KEY_ID'] = config.get('AWS', 'AWS_ACCESS_KEY_ID')
 
 
 def as_null(value, colname):
+    '''
+    Column expression that changes "value" values that appear in the "colname"
+    column of the dataframe into NULLs.
+
+    Args:
+        value: The value to replace with NULLs.
+        colname: The name of the column where to apply the transformation.
+
+    Returns:
+        A DataFrame Column.
+    '''
+
     return F.when(F.col(colname) != value, F.col(colname)).otherwise(None)
 
 
 def create_spark_session():
+    '''
+    Create a Spark session configured with Apache Hadoop Amazon Web Services
+    support.
+
+    Returns:
+        A Spark session.
+    '''
+
     spark = SparkSession \
         .builder \
         .config('spark.jars.packages', 'org.apache.hadoop:hadoop-aws:2.7.0') \
@@ -42,6 +62,15 @@ def create_spark_session():
 
 
 def process_song_data(spark, input_data, output_data):
+    '''
+    Transform raw JSON song data into analytics tables in Parquet format.
+
+    Args:
+        spark: A Spark session
+        input_data: A directory to get the JSON data from.
+        output_data: A directory to write the result Parquet files.
+    '''
+
     # read song data files
     song_data = os.path.join(input_data, SONG_DATASET_PATH)
     df = spark.read.json(song_data, multiLine=True)
@@ -71,6 +100,15 @@ def process_song_data(spark, input_data, output_data):
 
 
 def process_log_data(spark, input_data, output_data):
+    '''
+    Transform raw JSON log data into analytics tables in Parquet format.
+
+    Args:
+        spark: A Spark session
+        input_data: A directory to get the JSON data from.
+        output_data: A directory to write the result Parquet files.
+    '''
+
     # read song data file
     log_data = os.path.join(input_data, LOG_DATASET_PATH)
     df = spark.read.json(log_data)
@@ -110,6 +148,20 @@ def process_log_data(spark, input_data, output_data):
 
 
 def main(input_data='s3a://udacity-dend/', output_data=''):
+    '''
+    Run the ETL pipeline.
+
+    Extract all files from song and log directories in "input_data", load the
+    schema-on-read tables, perform data transformations and load them back into
+    "output_data" as Parquet files.
+
+    Args:
+        input_data: A directory to get the JSON data from. Can be a local path
+        or an S3 bucket.
+        output_data: A directory to write the result Parquet files. Can be a
+        local path or an S3 bucket.
+    '''
+
     spark = create_spark_session()
 
     process_song_data(spark, input_data, output_data)
