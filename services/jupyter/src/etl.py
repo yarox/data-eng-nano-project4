@@ -90,7 +90,7 @@ def process_log_data(spark, input_data, output_data):
     df = df.withColumn('userId', F.expr('cast(userId as int)'))
 
     # transform ts column into timestamp
-    df = df.withColumn('ts', F.from_unixtime(log_df.ts / 1000))
+    df = df.withColumn('ts', F.from_unixtime(df.ts / 1000))
 
     # create a staging table for log data
     df.createOrReplaceTempView('staging_events')
@@ -154,7 +154,7 @@ def process_log_data(spark, input_data, output_data):
             se.location,
             se.useragent AS user_agent,
             EXTRACT(month FROM se.ts) as month,
-            EXTRACT(year FROM se.ts) as year,
+            EXTRACT(year FROM se.ts) as year
         FROM staging_events AS se
             LEFT JOIN staging_songs AS ss
                 ON  se.song   = ss.title
