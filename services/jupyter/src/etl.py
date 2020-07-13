@@ -1,11 +1,14 @@
 from pyspark.sql import SparkSession
+
 import pyspark.sql.functions as F
+import fire
 
 from datetime import datetime
 
 import configparser
-import fire
 import os
+
+import sql_queries as Q
 
 
 SONGPLAYS_TABLE_PARQUET = 'songplays_table.parquet'
@@ -52,17 +55,7 @@ def process_song_data(spark, input_data, output_data):
     df.createOrReplaceTempView('staging_songs')
 
     # extract columns to create songs table
-    songs_table = spark.sql('''
-        SELECT
-            DISTINCT song_id AS song_id,
-            title AS title,
-            artist_id AS artist_id,
-            year,
-            duration
-        FROM staging_songs
-        WHERE song_id IS NOT NULL
-        SORT BY year, artist_id
-    ''')
+    songs_table = spark.sql(Q.songs_table_select)
 
     # write songs table to parquet files partitioned by year and artist
     songs_table_path = os.path.join(output_data, SONGS_TABLE_PARQUET)
@@ -70,17 +63,7 @@ def process_song_data(spark, input_data, output_data):
         partitionBy=('year', 'artist_id'))
 
     # extract columns to create artists table
-    artists_table = spark.sql('''
-        SELECT
-            DISTINCT artist_id,
-            artist_name AS name,
-            artist_location AS location,
-            artist_latitude AS latitude,
-            artist_longitude AS longitude
-        FROM staging_songs
-        WHERE artist_id IS NOT NULL
-        SORT BY artist_id
-    ''')
+    artists_table = spark.sql(Q.artists_table_select)
 
     # write artists table to parquet files
     artists_table_path = os.path.join(output_data, ARTISTS_TABLE_PARQUET)
@@ -103,46 +86,14 @@ def process_log_data(spark, input_data, output_data):
     df.createOrReplaceTempView('staging_events')
 
     # extract columns for users table
-    users_table = spark.sql('''
-        SELECT
-            user_id,
-            first_name,
-            last_name,
-            gender,
-            level
-        FROM (
-            SELECT
-                userId AS user_id,
-                firstName AS first_name,
-                lastName AS last_name,
-                gender AS gender,
-                LAST(level) AS level,
-                LAST(ts) AS ts
-            FROM staging_events
-            WHERE userId IS NOT NULL
-            GROUP BY user_id, first_name, last_name, gender
-            ORDER BY ts DESC
-        )
-        ORDER BY user_id
-    ''')
+    users_table = spark.sql(Q.users_table_select)
 
     # write users table to parquet files
     users_table_path = os.path.join(output_data, USERS_TABLE_PARQUET)
     users_table.write.parquet(users_table_path, mode='overwrite')
 
     # extract columns to create time table
-    time_table = spark.sql('''
-        SELECT
-            DISTINCT ts,
-            EXTRACT(hour FROM ts) as hour,
-            EXTRACT(day FROM ts) as day,
-            EXTRACT(week FROM ts) as week,
-            EXTRACT(month FROM ts) as month,
-            EXTRACT(year FROM ts) as year,
-            EXTRACT(dayofweek FROM ts) as weekday
-        FROM staging_events
-        ORDER BY ts
-    ''')
+    time_table = spark.sql(Q.time_table_select)
 
     # write time table to parquet files partitioned by year and month
     time_table_path = os.path.join(output_data, TIME_TABLE_PARQUET)
@@ -150,28 +101,7 @@ def process_log_data(spark, input_data, output_data):
         partitionBy=('year', 'month'))
 
     # extract columns from joined song and log datasets to create songplays table
-    songplays_table = spark.sql('''
-        SELECT
-            se.ts AS start_time,
-            se.userid AS user_id,
-            se.level,
-            ss.song_id,
-            ss.artist_id,
-            se.sessionid AS session_id,
-            se.location,
-            se.useragent AS user_agent,
-            EXTRACT(month FROM se.ts) as month,
-            EXTRACT(year FROM se.ts) as year
-        FROM staging_events AS se
-            LEFT JOIN staging_songs AS ss
-                ON  se.song   = ss.title
-                AND se.artist = ss.artist_name
-                AND se.length = ss.duration
-        WHERE
-            se.page       = 'NextSong'
-            AND se.userid is NOT NULL
-        ORDER BY year, month
-    ''')
+    songplays_table = spark.sql(Q.songplays_table_select)
 
     # write songplays table to parquet files partitioned by year and month
     songplays_table_path = os.path.join(output_data, SONGPLAYS_TABLE_PARQUET)
