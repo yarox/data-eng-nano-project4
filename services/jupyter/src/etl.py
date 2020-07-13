@@ -4,12 +4,12 @@ import pyspark.sql.functions as F
 from datetime import datetime
 
 import configparser
+import fire
 import os
 
 
 SONG_DATASET_PATH = 'song_data/*/*/*/'
 LOG_DATASET_PATH = 'log_data/*/*/'
-
 
 config = configparser.ConfigParser()
 config.read('dl.cfg')
@@ -172,15 +172,12 @@ def process_log_data(spark, input_data, output_data):
         partitionBy=('year', 'month'))
 
 
-def main():
+def main(input_data='s3a://udacity-dend/', output_data=''):
     spark = create_spark_session()
-
-    output_data = ''
-    input_data = 's3a://udacity-dend/'
 
     process_song_data(spark, input_data, output_data)
     process_log_data(spark, input_data, output_data)
 
 
 if __name__ == '__main__':
-    main()
+    fire.Fire(main)
