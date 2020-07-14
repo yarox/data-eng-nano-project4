@@ -71,7 +71,7 @@ SORT BY artist_id
 
 time_table_select = '''
 SELECT
-    DISTINCT ts,
+    DISTINCT ts as start_time,
     EXTRACT(hour FROM ts) as hour,
     EXTRACT(day FROM ts) as day,
     EXTRACT(week FROM ts) as week,
@@ -79,5 +79,5 @@ SELECT
     EXTRACT(year FROM ts) as year,
     EXTRACT(dayofweek FROM ts) as weekday
 FROM staging_events
-ORDER BY ts
+ORDER BY start_time
 '''
